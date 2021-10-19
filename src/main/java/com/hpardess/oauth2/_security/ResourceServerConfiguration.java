@@ -33,7 +33,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .authorizeRequests()
                 .antMatchers("/api/login**").permitAll()
                 .antMatchers("/api/login/**").permitAll()
-                .antMatchers("/api/dashboard**").hasAnyAuthority("ADMIN", "USER")
+                .antMatchers("/api/customer**").hasAnyAuthority("ADMIN", "USER")
                 .antMatchers("/api/user**").hasAuthority("ADMIN")
                 .antMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()

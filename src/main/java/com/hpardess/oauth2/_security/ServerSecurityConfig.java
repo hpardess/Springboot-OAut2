@@ -5,11 +5,14 @@ import com.hpardess.oauth2._security.errors.CustomAuthenticationEntryPoint;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,18 +25,35 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class ServerSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    // private final UserDetailsService userDetailsService;
-
     @Autowired
     private CustomUserService customUserService;
 
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    // public ServerSecurityConfig(CustomAuthenticationEntryPoint customAuthenticationEntryPoint, @Qualifier("userService")
-    //         UserDetailsService userDetailsService) {
-    //     this.customUserService = userDetailsService;
-    // }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .antMatcher("/**")
+            .authorizeRequests()
+            .antMatchers("/oauth/authorize**", "/login**", "/error**")
+            .permitAll()
+            .and()
+            .authorizeRequests()
+            .anyRequest().authenticated()
+            .and()
+            .formLogin().permitAll();
+    }
+
+    @Override
+    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        authenticationManagerBuilder.userDetailsService(customUserService).passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -43,10 +63,6 @@ public class ServerSecurityConfig extends WebSecurityConfigurerAdapter {
         return provider;
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     @Override

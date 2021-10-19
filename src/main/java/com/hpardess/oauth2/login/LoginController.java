@@ -30,6 +30,7 @@ public class LoginController {
         User user = new User(null, email, name);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(User.Role.USER);
+        user.setActive(true);
 
         return userService.save(user);
     }
